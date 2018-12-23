@@ -13,6 +13,7 @@ internal class XMLParser : DefaultHandler() {
     private var parsingTitle = false
     private var parsingDescription = false
     private var parsingLink = false
+    private var parsingCreator = false
 
     private var elementValue: String? = null
     private var title = EMPTY_STRING
@@ -20,6 +21,7 @@ internal class XMLParser : DefaultHandler() {
     private var image: String? = null
     private var date: String? = null
     private var description: String? = null
+    private var creator: String? = null
 
     private var rssItem: RssItem? = null
     val items = arrayListOf<RssItem>()
@@ -42,6 +44,10 @@ internal class XMLParser : DefaultHandler() {
             LINK -> if (qName != ATOM_LINK) {
                 parsingLink = true
                 link = EMPTY_STRING
+            }
+            CREATOR -> if (qName != ATOM_LINK) {
+                parsingCreator = true
+                creator = EMPTY_STRING
             }
         }
 
@@ -66,6 +72,7 @@ internal class XMLParser : DefaultHandler() {
                         it.image = image
                         it.publishDate = date
                         it.description = description
+                        it.creator = creator
                         if (image == null && description != null && getImageSourceFromDescription(description) != null) {
                             it.image = getImageSourceFromDescription(description!!)
                         }
@@ -74,6 +81,7 @@ internal class XMLParser : DefaultHandler() {
                     link = EMPTY_STRING
                     image = null
                     date = EMPTY_STRING
+                    creator = EMPTY_STRING
                 }
                 TITLE -> if (!qName.contains(MEDIA)) {
                     parsingTitle = false
@@ -91,6 +99,10 @@ internal class XMLParser : DefaultHandler() {
                 PUBLISH_DATE -> date = elementValue
                 DESCRIPTION -> {
                     parsingDescription = false
+                    elementValue = EMPTY_STRING
+                }
+                CREATOR -> {
+                    parsingCreator = false
                     elementValue = EMPTY_STRING
                 }
             }
@@ -114,6 +126,9 @@ internal class XMLParser : DefaultHandler() {
         }
         if (parsingLink) {
             link = link!! + buff
+        }
+        if (parsingCreator) {
+            creator = creator!! + buff
         }
     }
 
@@ -160,5 +175,6 @@ internal class XMLParser : DefaultHandler() {
         private const val URL = "url"
         private const val IMAGE = "image"
         private const val PUBLISH_DATE = "pubdate"
+        private const val CREATOR = "creator"
     }
 }
